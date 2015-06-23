@@ -16,15 +16,15 @@ public @interface Cmd {
     /**
      * @return command aliases
      */
-    String[] aliases();
+    String[] aliases() default {};
 
     /**
      * @return the permission for the command
      */
-    String perm();
+    String perm() default "";
 
     /**
      * @return the issuers, as specified in {@link CmdRegistrar#forOnly(int)}
      */
-    int[] issuers();
+    int[] issuers() default CmdRegistrar.ALL;
 }
