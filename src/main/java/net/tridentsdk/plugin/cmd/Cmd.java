@@ -26,5 +26,5 @@ public @interface Cmd {
     /**
      * @return the issuers, as specified in {@link CmdRegistrar#forOnly(int)}
      */
-    int issuers();
+    int[] issuers();
 }

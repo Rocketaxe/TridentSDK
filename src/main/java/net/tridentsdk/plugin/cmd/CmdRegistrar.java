@@ -42,12 +42,9 @@ import java.util.Map;
 @NotThreadSafe
 public class CmdRegistrar {
     public static final int CONSOLE = 0;
-    public static final int CONSOLE_AND_PLAYERS = 1;
-    public static final int CONSOLE_AND_BLOCKS = 2;
-    public static final int PLAYERS = 3;
-    public static final int PLAYERS_AND_BLOCKS = 4;
-    public static final int BLOCKS = 5;
-    public static final int ALL = 6;
+    public static final int PLAYERS = 1;
+    public static final int BLOCKS = 2;
+    public static final int ALL = 3;
 
     private static final Map<String, CmdWrapper> COMMAND_MAP = Factories.collect().createMap();
     private static final String SPLIT = "$";
@@ -84,7 +81,7 @@ public class CmdRegistrar {
         CmdWrapper wrapper = COMMAND_MAP.get(strings[0]);
 
         if (wrapper == null) {
-            issuer.sendRaw("Command " + strings[0] + " doesn't exist");
+            issuer.sendRaw("Command \"" + strings[0] + "\" doesn't exist");
             return;
         }
 
@@ -102,8 +99,13 @@ public class CmdRegistrar {
      * @return the current instance
      */
     public CmdRegistrar bind(String string) {
-        validate(string);
-        string = split(string);
+        string = split(string.replaceAll("\\$", ""));
+
+        // Ensure the command isn't registering again in the same plugin
+        if (!string.contains(SPLIT) && toRegister.contains(string)) {
+            string = split(string);
+        }
+
         toRegister.add(string);
         wrappers.add(NULL_DATA); // Size the list correctly
 
@@ -125,6 +127,55 @@ public class CmdRegistrar {
     }
 
     /**
+     * Will bind every method to a new command which may be invoked using the annotation specified alias or
+     * the command name stripped of {@code $} if it is a keyword.
+     *
+     * @param cls       the class to register all methods as commands
+     * @param annotated {@code true} to only register annotated command methods
+     * @return the current instance
+     */
+    public CmdRegistrar searchAndBind(Class<?> cls, boolean annotated) {
+        for (Method method : cls.getDeclaredMethods()) {
+            if (annotated) {
+                if (method.getAnnotation(Cmd.class) != null) {
+                    bind(method.getName()).to(method);
+                }
+            } else {
+                bind(method.getName()).to(method);
+            }
+        }
+        return this;
+    }
+
+    /**
+     * Finds the command matching the name of the method, and binds the command to it
+     * <p>
+     * <p>The method must be: {@code {command}(String cmd, CommandIssuer issuer, String[] args, String label)}</p>
+     * <p>
+     * <p>Label names are not accepted. The name of the method must be the one passed into the bind method.</p>
+     *
+     * @param method the method to bind
+     * @return the current instance
+     */
+    public CmdRegistrar to(Method method) {
+        Class<?> cls = method.getDeclaringClass();
+
+        Cmd cmd;
+        String string = method.getName();
+        String split = split(string.replaceAll("\\$", ""));
+        int idx = toRegister.indexOf(split);
+        if ((cmd = method.getAnnotation(Cmd.class)) != null) {
+            wrappers.set(idx, new CmdWrapper(split, cls, OpFactory.annotation(cmd, method)));
+        } else {
+            if (idx == -1) return this;
+
+            wrappers.set(idx, new CmdWrapper(split, cls, OpFactory.methodName(method)));
+        }
+
+        return this;
+    }
+
+    /**
      * Binds the command to the given methods in the class
      * <p>
      * <p>This method finds the methods in the class which match the command name.</p>
@@ -134,17 +185,7 @@ public class CmdRegistrar {
      */
     public CmdRegistrar to(Class<?> cls) {
         for (Method method : cls.getDeclaredMethods()) {
-            Cmd cmd;
-            String string = method.getName();
-            String split = split(string.replaceAll("\\$", ""));
-            int idx = toRegister.indexOf(split);
-            if ((cmd = method.getAnnotation(Cmd.class)) != null) {
-                wrappers.set(idx, new CmdWrapper(split, cls, OpFactory.annotation(cmd, method)));
-            } else {
-                if (idx == -1) continue;
-
-                wrappers.set(idx, new CmdWrapper(split, cls, OpFactory.methodName(method)));
-            }
+            to(method);
         }
         return this;
     }
@@ -219,9 +260,9 @@ public class CmdRegistrar {
      * @param issuers the issuers
      * @return the current instance
      */
-    public CmdRegistrar forOnly(int issuers) {
+    public CmdRegistrar forOnly(int... issuers) {
         CmdWrapper currentWrapper = wrappers.get(index);
-        if (currentWrapper.issuers != -1) {
+        if (currentWrapper.issuers != null) {
             TridentLogger.warn("You have already edited the issuers for this command, try and()");
         }
 
@@ -259,6 +300,7 @@ public class CmdRegistrar {
                 return;
             }
 
+            wrapper.publish();
             COMMAND_MAP.put(cmd, wrapper);
 
             if (wrapper.aliases != null) {
@@ -280,13 +322,6 @@ public class CmdRegistrar {
             return cmd;
         } else {
             return string;
-        }
-    }
-
-    private void validate(String commandString) {
-        String[] strings = commandString.split(" ");
-        if (strings[0].contains("$")) {
-            throw new UnsupportedOperationException("Cannot use the $ char in the command, this is reserved.");
         }
     }
 
@@ -339,25 +374,33 @@ public class CmdRegistrar {
             };
         }
 
-        private static boolean checkIssuer(CommandIssuer issuer, int issuers, String permission) {
-            if (issuers == ALL && issuer instanceof Player) {
+        private static boolean checkIssuer(CommandIssuer issuer, int[] issuers, String permission) {
+            if (issuers[0] == ALL && issuer instanceof Player) {
                 issuer.sendRaw("You cannot execute this command");
                 return ((Player) issuer).holdsPermission(permission);
             }
 
             if (issuer instanceof ServerConsole) {
-                if (issuers > CONSOLE_AND_BLOCKS) {
+                if (!contains(issuers, CONSOLE)) {
                     issuer.sendRaw("You cannot execute this command");
                     return false;
                 }
             } else if (issuer instanceof Player) {
-                if (issuers != PLAYERS || issuers != PLAYERS_AND_BLOCKS || issuers != CONSOLE_AND_PLAYERS || !((Player) issuer).holdsPermission(permission)) {
+                if (!contains(issuers, PLAYERS) || (!((Player) issuer).holdsPermission(permission) && permission.trim().length() != 0)) {
                     issuer.sendRaw("You cannot execute this command");
                     return false;
                 }
             } // TODO command blocks
 
             return true;
+        }
+
+        private static boolean contains(int[] arr, int type) {
+            for (int i = 0; i < arr.length; i++) {
+                if (i == type) return true;
+            }
+
+            return false;
         }
     }
 
@@ -367,7 +410,7 @@ public class CmdRegistrar {
         private Object instance;
         private String[] aliases;
         private String perm;
-        private int issuers = -1;
+        private int[] issuers;
 
         public CmdWrapper() {
             op = null;
@@ -387,6 +430,12 @@ public class CmdRegistrar {
 
         public void invoke(String command, CommandIssuer issuer, String[] args, String label) {
             op.handle(command, issuer, args, label);
+        }
+
+        public void publish() {
+            if (aliases == null) aliases = new String[0];
+            if (perm == null) perm = "";
+            if (issuers == null) issuers = new int[]{ALL };
         }
     }
 }
