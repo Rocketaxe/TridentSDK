@@ -17,16 +17,11 @@
 
 package net.tridentsdk.plugin;
 
-import com.google.common.hash.HashFunction;
-import com.google.common.hash.Hashing;
 import net.tridentsdk.Handler;
 import net.tridentsdk.Trident;
-import net.tridentsdk.concurrent.HeldValueLatch;
-import net.tridentsdk.concurrent.TaskExecutor;
 import net.tridentsdk.config.JsonConfig;
 import net.tridentsdk.event.Listener;
 import net.tridentsdk.plugin.annotation.PluginDescription;
-import net.tridentsdk.plugin.cmd.Command;
 import net.tridentsdk.util.TridentLogger;
 
 import javax.annotation.Nonnull;
@@ -35,32 +30,33 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.Objects;
 
 /**
  * Must be extended by a non-inner class to represent a plugin's <em>main class</em>
  *
  * @author The TridentSDK Team
  */
-public class TridentPlugin {
-    private static final HashFunction HASHER = Hashing.murmur3_32();
+public class Plugin {
     private final File pluginFile;
     private final File configDirectory;
     private final PluginDescription description;
     private final JsonConfig defaultConfig;
-    private final HeldValueLatch<TaskExecutor> executor = HeldValueLatch.create();
     public PluginClassLoader classLoader;
 
     /**
      * It's not a good idea to use this constructor
      */
-    protected TridentPlugin() {
+    protected Plugin() {
         // Prevent stack continuation
         throw new IllegalStateException("Cannot be directly instantiated");
     } // avoid any plugin initiation outside of this package
 
-    TridentPlugin(File pluginFile, PluginDescription description, PluginClassLoader loader) {
-        Handler.forPlugins().plugins().stream().filter(plugin -> plugin.description().name().equalsIgnoreCase(description.name())).forEach(plugin -> TridentLogger.error(new IllegalStateException(
-                "Plugin already initialized or plugin named " + description.name() + " exists already")));
+    Plugin(File pluginFile, PluginDescription description, PluginClassLoader loader) {
+        Handler.forPlugins().plugins()
+                .stream().filter(plugin -> plugin.description().name().equalsIgnoreCase(description.name()))
+                .forEach(plugin -> TridentLogger.error(new IllegalStateException(
+                        "Plugin already initialized or plugin named " + description.name() + " exists already")));
 
         this.pluginFile = pluginFile;
         this.description = description;
@@ -78,10 +74,10 @@ public class TridentPlugin {
      * @return the instance of the plugin
      */
     @Nullable
-    public static TridentPlugin instance() {
+    public static Plugin instance() {
         Class<?> caller = Trident.findCaller(3);
         ClassLoader loader = caller.getClassLoader();
-        for (TridentPlugin plugin : Handler.forPlugins().plugins())
+        for (Plugin plugin : Handler.forPlugins().plugins())
             if (plugin.classLoader.equals(loader))
                 return plugin;
         return null;
@@ -97,9 +93,9 @@ public class TridentPlugin {
      * @return the instance of the plugin with the specified main class
      */
     @Nullable
-    public static TridentPlugin instance(Class<? extends TridentPlugin> c) {
+    public static Plugin instance(Class<? extends Plugin> c) {
         ClassLoader loader = c.getClassLoader();
-        for (TridentPlugin plugin : Handler.forPlugins().plugins())
+        for (Plugin plugin : Handler.forPlugins().plugins())
             if (plugin.classLoader.equals(loader))
                 return plugin;
         return null;
@@ -108,26 +104,22 @@ public class TridentPlugin {
     /**
      * Called by the handler to indicate the plugin has been constructed
      */
-    public void onLoad() {
+    public void load() {
         // Method intentionally left blank
     }
 
     /**
      * Called by the handler to indicate the enabling of this plugin
      */
-    public void onEnable() {
+    public void enable() {
         // Method intentionally left blank
     }
 
     /**
      * Called by the handler to indicate the disabling of this plugin
      */
-    public void onDisable() {
+    public void disable() {
         // Method intentionally left blank
-    }
-
-    public final void startup() {
-        // TODO
     }
 
     /**
@@ -146,8 +138,8 @@ public class TridentPlugin {
      * @param c the class to find the command instance by
      * @return the command instance registered to the server
      */
-    public <T extends Command> T commandBy(Class<T> c) {
-        return (T) Handler.forCommands().commandsFor(this).get(c);
+    public <T> T commandBy(Class<T> c) {
+        return null;
     }
 
     /**
@@ -194,11 +186,14 @@ public class TridentPlugin {
     }
 
     /**
-     * The default configuration for this plugin, which may or may not exist physically
+     * The default configuration for this plugin
+     *
+     * <p>If the config does not exist, one is created for you. If the config is packaged in the jar,
+     * that one is loaded if it has not already.</p>
      *
      * @return the default configuration given to this plugin
      */
-    public JsonConfig defaultConfig() {
+    public JsonConfig config() {
         return this.defaultConfig;
     }
 
@@ -209,7 +204,7 @@ public class TridentPlugin {
      *
      * @return the plugin directory where resources like the default config are saved
      */
-    public File configDirectory() {
+    public File configDir() {
         return this.configDirectory;
     }
 
@@ -225,8 +220,8 @@ public class TridentPlugin {
 
     @Override
     public boolean equals(Object other) {
-        if (other instanceof TridentPlugin) {
-            TridentPlugin otherPlugin = (TridentPlugin) other;
+        if (other instanceof Plugin) {
+            Plugin otherPlugin = (Plugin) other;
             if (otherPlugin.description().name().equals(this.description().name())) {
                 if (otherPlugin.description().author().equals(this.description().author())) {
                     return true;
@@ -242,6 +237,6 @@ public class TridentPlugin {
         String name = this.description().name();
         String author = this.description().author();
 
-        return HASHER.newHasher().putUnencodedChars(name).putUnencodedChars(author).hash().hashCode();
+        return Objects.hash(name, author);
     }
 }

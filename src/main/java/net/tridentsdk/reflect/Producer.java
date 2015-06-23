@@ -28,7 +28,7 @@ public interface Producer<T> {
      *
      * @return the produced object
      */
-    public T produce();
+    T produce();
 
     /**
      * Produce an object for an {@link Inject#meta()} class provided by the annotation

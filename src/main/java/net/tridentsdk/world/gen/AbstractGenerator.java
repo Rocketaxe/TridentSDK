@@ -34,15 +34,15 @@ public abstract class AbstractGenerator {
      *
      * <p>Should only be invoked by TridentChunk</p>
      *
-     * @param location
-     * @return
+     * @param location the chunk's location
+     * @return a double array containing the extended ID data of the chunk
      */
     public abstract char[][] generateChunkBlocks(ChunkLocation location);
 
     /**
      * Populates block data for a chunk
-     * @param location
-     * @return
+     * @param location the location of the chunk
+     * @return the data of each block in the chunk
      */
     public abstract byte[][] generateBlockData(ChunkLocation location);
 }

@@ -3,7 +3,7 @@ package com.gmail.woodyc40.battledome;
 import net.tridentsdk.concurrent.TridentRunnable;
 import net.tridentsdk.entity.living.Player;
 import net.tridentsdk.factory.Factories;
-import net.tridentsdk.plugin.TridentPlugin;
+import net.tridentsdk.plugin.Plugin;
 import net.tridentsdk.util.WeakEntity;
 
 import java.util.Map;
@@ -133,7 +133,7 @@ public class BattleTimer extends TridentRunnable {
                 }
                 break;
             case END:
-                Factories.tasks().syncLater(TridentPlugin.instance(), new TridentRunnable() {
+                Factories.tasks().syncLater(Plugin.instance(), new TridentRunnable() {
                     @Override
                     public void run() {
                         for (WeakEntity<Player> player : game.players().keySet()) {

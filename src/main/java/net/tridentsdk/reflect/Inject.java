@@ -35,5 +35,5 @@ public @interface Inject {
      *
      * @return the implementation class
      */
-    public Class<?> meta() default Class.class;
+    Class<?> meta() default Class.class;
 }

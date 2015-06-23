@@ -6,7 +6,7 @@ import net.tridentsdk.concurrent.TridentRunnable;
 import net.tridentsdk.entity.living.Player;
 import net.tridentsdk.factory.Factories;
 import net.tridentsdk.meta.ChatColor;
-import net.tridentsdk.plugin.TridentPlugin;
+import net.tridentsdk.plugin.Plugin;
 import net.tridentsdk.util.WeakEntity;
 
 import java.util.Map;
@@ -34,7 +34,7 @@ public class Game {
         this.id = id;
         this.players = players;
 
-        Factories.tasks().syncRepeat(TridentPlugin.instance(), runnable, 0L, 20L);
+        Factories.tasks().syncRepeat(Plugin.instance(), runnable, 0L, 20L);
     }
 
     public static Game newGame(int id) {
@@ -130,7 +130,7 @@ public class Game {
             player.obtain().sendMessage(CommandHandler.PREFIX + "Team " + team.toString() + " has won the game");
         }
 
-        Factories.tasks().syncLater(TridentPlugin.instance(), new TridentRunnable() {
+        Factories.tasks().syncLater(Plugin.instance(), new TridentRunnable() {
             @Override
             public void run() {
                 for (WeakEntity<Player> player : players.keySet()) {

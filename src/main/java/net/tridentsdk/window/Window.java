@@ -75,5 +75,5 @@ public interface Window {
      *
      * @return the items in the window
      */
-    public Item[] items();
+    Item[] items();
 }

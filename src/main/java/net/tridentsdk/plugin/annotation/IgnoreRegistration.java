@@ -17,14 +17,16 @@
 
 package net.tridentsdk.plugin.annotation;
 
+import net.tridentsdk.plugin.Plugin;
+
 import java.lang.annotation.*;
 
 /**
  * Marks a class which registration should exclude so the user may register manually
  *
  * <p>Do not use the annotation in order to acquire the instance of a registered class. You may use the
- * {@link net.tridentsdk.plugin.TridentPlugin#listenerBy(Class)} to find an instance of a listener and
- * {@link net.tridentsdk.plugin.TridentPlugin#commandBy(Class)} to find an instance of a command</p>
+ * {@link Plugin#listenerBy(Class)} to find an instance of a listener and
+ * {@link Plugin#commandBy(Class)} to find an instance of a command</p>
  *
  * @author The TridentSDK Team
  */

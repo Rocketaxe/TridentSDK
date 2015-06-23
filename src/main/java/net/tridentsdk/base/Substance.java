@@ -417,13 +417,6 @@ public enum Substance {
     RECORD_11("2266", 1),
     RECORD_12("2267", 1);
 
-    private final Pattern PATTERN = Pattern.compile("_");
-    private final String id;
-    private final String data;
-    private final int maxStack;
-    private final int idInt;
-    private final String replaced;
-
     private static final Map<Integer, Substance> ids;
 
     static {
@@ -433,6 +426,13 @@ public enum Substance {
         }
         ids = Collections.unmodifiableMap(builder);
     }
+
+    private final Pattern PATTERN = Pattern.compile("_");
+    private final String id;
+    private final String data;
+    private final int maxStack;
+    private final int idInt;
+    private final String replaced;
 
     Substance(String id, int stack, String data) {
         this.id = id;
@@ -472,8 +472,8 @@ public enum Substance {
      * <p>Should be the favored method for getting a substance</p>
      * <p>E.g. fromId(1) will return Substance.STONE</p>
      *
-     * @param id
-     * @return
+     * @param id the ID to find the substance with
+     * @return the substance with the ID
      */
     public static Substance fromId (byte id) {
         return ids.get((int) id);

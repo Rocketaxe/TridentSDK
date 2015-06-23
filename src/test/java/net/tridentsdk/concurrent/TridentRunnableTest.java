@@ -17,7 +17,7 @@
 
 package net.tridentsdk.concurrent;
 
-import net.tridentsdk.plugin.TridentPlugin;
+import net.tridentsdk.plugin.Plugin;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -64,7 +64,7 @@ public class TridentRunnableTest {
             }
 
             @Override
-            public TridentPlugin owner() {
+            public Plugin owner() {
                 return null;
             }
 

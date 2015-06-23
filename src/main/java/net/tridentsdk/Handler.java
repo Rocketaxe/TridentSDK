@@ -19,7 +19,6 @@ package net.tridentsdk;
 import net.tridentsdk.event.EventHandler;
 import net.tridentsdk.plugin.TridentPluginHandler;
 import net.tridentsdk.plugin.channel.ChannelHandler;
-import net.tridentsdk.plugin.cmd.CommandHandler;
 import net.tridentsdk.service.ChatHandler;
 import net.tridentsdk.service.TransactionHandler;
 import net.tridentsdk.window.WindowHandler;
@@ -34,7 +33,7 @@ public final class Handler {
 
     private static final EventHandler EVENT_HANDLER = EventHandler.create();
     private static final TridentPluginHandler PLUGIN_HANDLER = new TridentPluginHandler();
-    private static final CommandHandler COMMAND_HANDLER = new CommandHandler();
+    //private static final CommandHandler COMMAND_HANDLER = new CommandHandler();
     private static final ChatHandler CHAT_HANDLER = new ChatHandler();
     private static final TransactionHandler TRANSACTION_HANDLER = new TransactionHandler();
 
@@ -57,15 +56,6 @@ public final class Handler {
      */
     public static TridentPluginHandler forPlugins() {
         return PLUGIN_HANDLER;
-    }
-
-    /**
-     * Obtains the command handler
-     *
-     * @return the command handler
-     */
-    public static CommandHandler forCommands() {
-        return COMMAND_HANDLER;
     }
 
     /**

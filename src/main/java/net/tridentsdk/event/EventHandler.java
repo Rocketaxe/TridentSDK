@@ -23,7 +23,7 @@ import com.google.common.collect.Maps;
 import net.tridentsdk.Handler;
 import net.tridentsdk.Trident;
 import net.tridentsdk.docs.InternalUseOnly;
-import net.tridentsdk.plugin.TridentPlugin;
+import net.tridentsdk.plugin.Plugin;
 import net.tridentsdk.plugin.annotation.IgnoreRegistration;
 import net.tridentsdk.util.TridentLogger;
 
@@ -85,7 +85,7 @@ public class EventHandler {
      * @param listener the listener instance to use to register
      */
     @InternalUseOnly
-    public void registerListener(TridentPlugin plugin, Listener listener) {
+    public void registerListener(Plugin plugin, Listener listener) {
         final Class<?> c = listener.getClass();
         HashMultimap<Class<? extends Event>, EventReflector> reflectors = reflectorsFrom(plugin, listener, c);
 
@@ -95,13 +95,14 @@ public class EventHandler {
         }
     }
 
-    private HashMultimap<Class<? extends Event>, EventReflector> reflectorsFrom(TridentPlugin plugin, Listener listener,
+    private HashMultimap<Class<? extends Event>, EventReflector> reflectorsFrom(Plugin plugin, Listener listener,
             final Class<?> c) {
         MethodAccess access = accessors.computeIfAbsent(c, (k) -> MethodAccess.get(c));
 
         Method[] methods = c.getDeclaredMethods();
 
         HashMultimap<Class<? extends Event>, EventReflector> map = HashMultimap.create(11, 11);
+
         for (int i = 0, n = methods.length; i < n; i++) {
             Method method = methods[i];
             if (method.isAnnotationPresent(IgnoreRegistration.class)) {
@@ -177,7 +178,7 @@ public class EventHandler {
      * @param plugin the plugin to find the listeners for
      * @return the listeners for that plugin
      */
-    public Map<Class<? extends Listener>, Listener> listenersFor(TridentPlugin plugin) {
+    public Map<Class<? extends Listener>, Listener> listenersFor(Plugin plugin) {
         Map<Class<? extends Listener>, Listener> listeners = Maps.newHashMap();
         for (Queue<EventReflector> reflectors : callers.values()) {
             reflectors.stream().filter(reflector -> reflector.plugin().equals(plugin)).forEach(reflector -> listeners.put(reflector.instance().getClass(), reflector.instance()));

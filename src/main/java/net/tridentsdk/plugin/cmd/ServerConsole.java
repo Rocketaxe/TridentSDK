@@ -27,13 +27,13 @@ import net.tridentsdk.Messagable;
  * @author The TridentSDK Team
  */
 public interface ServerConsole extends Messagable, CommandIssuer {
-    public static final String RESET = PlatformColor.forColor("reset");
-    public static final String BLACK = PlatformColor.forColor("black");
-    public static final String RED = PlatformColor.forColor("red");
-    public static final String GREEN = PlatformColor.forColor("green");
-    public static final String YELLOW = PlatformColor.forColor("yellow");
-    public static final String BLUE = PlatformColor.forColor("blue");
-    public static final String PURPLE = PlatformColor.forColor("purple");
-    public static final String CYAN = PlatformColor.forColor("cyan");
-    public static final String WHITE = PlatformColor.forColor("white");
+    String RESET = PlatformColor.forColor("reset");
+    String BLACK = PlatformColor.forColor("black");
+    String RED = PlatformColor.forColor("red");
+    String GREEN = PlatformColor.forColor("green");
+    String YELLOW = PlatformColor.forColor("yellow");
+    String BLUE = PlatformColor.forColor("blue");
+    String PURPLE = PlatformColor.forColor("purple");
+    String CYAN = PlatformColor.forColor("cyan");
+    String WHITE = PlatformColor.forColor("white");
 }
