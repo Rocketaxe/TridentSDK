@@ -33,6 +33,9 @@ import java.util.Map;
  * <p>
  * <p>In order for this to take effect, you must call {@link #complete()}. Failing to do so will result in
  * the operation passed as NOP. Editing the commands after callig complete will result in undefined behavior.</p>
+ * <p>
+ * <p>If Java keywords are used as commands, the method should contain $ to remove the error. You may choose
+ * where to place it, but it is recommened to place it at the end of the method name.</p>
  *
  * @author The TridentSDK Team
  */
